@@ -24,7 +24,10 @@ with st.sidebar:
 			st.error("Please enter a valid URL")
 		else:
             db.add_product(product_url)
-			st.success("Product is now being tracked!")
+            with st.spinner("Added product to database. Scraping product data..."):
+                product_data = scrape_product(product_url)
+                db.add_price(product_data)
+                        st.success("Product is now being tracked!")
 
 #Main content
 st.title("Price Tracker Dashboard")
