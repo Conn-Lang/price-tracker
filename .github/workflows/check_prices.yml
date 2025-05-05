@@ -4,7 +4,7 @@ name: Price Check
 on:
   schedule:
     # Runs every 3 minutes
-    - cron: "*/3 * * * *"
+    - cron: "*/10 * * * *"
   workflow_dispatch: # Allows manual triggering
 
 jobs:
