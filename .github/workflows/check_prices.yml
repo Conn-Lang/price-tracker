@@ -30,4 +30,4 @@ jobs:
         env:
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
-        env: python check_prices.py
+        run: python check_prices.py
