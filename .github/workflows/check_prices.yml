@@ -21,6 +21,33 @@ jobs:
           python-version: "3.10"
           cache: "pip"
 
+      - name: Network Diagnostics
+        run: |
+          echo "--- Resolving Supabase Host (db.ebyxwxiwglqbtdxraubp.supabase.co) ---"
+          nslookup db.ebyxwxiwglqbtdxraubp.supabase.co
+          echo ""
+          echo "--- Pinging Google's public DNS over IPv6 (checks general IPv6 outbound) ---"
+          ping -6 -c 4 ipv6.google.com || echo "Ping to ipv6.google.com failed or IPv6 not fully available."
+          echo ""
+          echo "--- Testing Netcat to Supabase IPv6 (2600:1f1c:f9:4d13:d6fb:ca31:8298:cf08) on port 5432 ---"
+          nc -zv -6 db.ebyxwxiwglqbtdxraubp.supabase.co 5432 || echo "Netcat to Supabase IPv6 host on port 5432 failed."
+          # If the above uses the hostname which might resolve to IPv4 if IPv6 path fails,
+          # you can also explicitly try the IPv6 address from your error if it's static:
+          # nc -zv -6 2600:1f1c:f9:4d13:d6fb:ca31:8298:cf08 5432 || echo "Netcat to specific Supabase IPv6 address on port 5432 failed."
+          echo ""
+          echo "--- Attempting to get IPv4 address for Supabase Host ---"
+          SUPABASE_IPV4=$(nslookup db.ebyxwxiwglqbtdxraubp.supabase.co | awk '/^Address: [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/ {print $2; exit}')
+          if [ -n "$SUPABASE_IPV4" ]; then
+            echo "Resolved Supabase IPv4: $SUPABASE_IPV4"
+            echo "--- Testing Netcat to Supabase IPv4 ($SUPABASE_IPV4) on port 5432 ---"
+            nc -zv $SUPABASE_IPV4 5432 || echo "Netcat to Supabase IPv4 ($SUPABASE_IPV4) on port 5432 failed."
+          else
+            echo "Could not automatically resolve IPv4 address for Supabase host using nslookup/awk."
+            echo "You may need to manually find an IPv4 address for db.ebyxwxiwglqbtdxraubp.supabase.co and test it if IPv6 fails."
+          fi
+          echo ""
+          echo "--- Network diagnostics complete ---"
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
